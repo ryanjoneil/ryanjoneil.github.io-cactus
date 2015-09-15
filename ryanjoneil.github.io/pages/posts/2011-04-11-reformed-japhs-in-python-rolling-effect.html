@@ -1,0 +1,46 @@
+title: reformed japhs in python - rolling effect
+author: Ryan J. O'Neil
+date: 11-04-2011
+
+{% extends "post.html" %}
+
+{% block post %}
+
+<p>Here's a JAPH composed solely for effect.  For each letter in 'just another python hacker' it loops over each the characters  ' abcdefghijklmnopqrstuvwxyz', printing each.  Between characters it pauses for 0.05 seconds, backing up and moving on to the next if it hasn't reached the desired one yet.  This achieves a sort of rolling effect by which the final string laboriously appears on our screen.</p>
+
+<pre><code class="py">import string
+import sys
+import time
+
+letters = ' ' + string.ascii_lowercase
+for l in 'just another python hacker':
+    for x in letters:
+        print(x, end='')
+        sys.stdout.flush()
+        time.sleep(0.05)
+
+        if x == l:
+            break
+        else:
+            print('\b', end='')
+
+print()
+</code></pre>
+
+<p>Locating and printing of each letter in the string is done via a list comprehension.  At the end we actually have an extra line of code (the eval statement) that gives us our newline.</p>
+
+<pre><code class="py">[[(lambda x,l:str(print(x,end=''))+str(__import__(print.
+__doc__[print.__doc__.index('stdout') - 4:print.__doc__.
+index('stdout')-1]).stdout.flush()) + str(__import__(''.
+join(reversed('emit'))).sleep(0o5*1.01/0x64))+str(print(
+'\b',end='\x09'.strip())if x!=l else'*&#'))(x1,l1)for x1
+in('\x20'+getattr(__import__(type('phear').__name__+'in'
+'g'),dir(__import__(type('snarf').__name__+'ing'))[13]))
+[:('\x20'+getattr(__import__(type('smear').__name__+'in'
+'g'),dir(__import__(type('slurp').__name__+'ing'))[13]))
+.index(l1)+1]]for l1 in'''just another python hacker''']
+eval('''\x20\x09eval("\x20\x09eval('\x20 print()')")''')
+</code></pre>
+
+
+{% endblock %}

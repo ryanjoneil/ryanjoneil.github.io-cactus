@@ -1,0 +1,79 @@
+title: reformed japhs in python - turing machine
+author: Ryan J. O'Neil
+date: 18-04-2011
+
+{% extends "post.html" %}
+
+{% block post %}
+
+<p>This JAPH constructs a <a href="http://en.wikipedia.org/wiki/Turing_machine">Turing machine</a> in order to achieve its goal.  The machine accepts any string that ends in '\n' and, to assist in our purposes, allows side effects.  This lets us print the value of the tape as it encounters each character.  While the idea of using lambda functions as side effects in a Turing machine is a little bizarre on many levels, we work with what we have.  And Python is multi-paradigmatic, so what the heck.</p>
+
+<pre><code class="py">import re
+
+def turing(tape, transitions):
+    # The tape input comes in as a string.  We approximate an infinite
+    # length tape via a hash, so we need to convert this to {index: value}
+    tape_hash = {i: x for i, x in enumerate(tape)}
+
+    # Start at 0 using our transition matrix
+    index = 0
+    state = 0
+    while True:
+        value = tape_hash.get(index, '')
+
+        # This is a modified Turing machine: it uses regexen
+        # and has side effects.  Oh well, I needed IO.
+        for rule in transitions[state]:
+            regex, next, direction, new_value, side_effect = rule
+            if re.match(regex, value):
+                # Terminal states
+                if new_value in ('YES', 'NO'):
+                    return new_value
+
+                tape_hash[index] = new_value
+                side_effect(value)
+                index += direction
+                state = next
+                break
+
+assert 'YES' == turing('just another python hacker\n', [
+    # This Turing machine recognizes the language of strings that end in \n.
+
+    # Regex rule, next state, left/right = -1/+1, new value, side effect.
+    [ # State 0:
+        [r'^[a-z ]$', 0, +1, '', lambda x: print(x, end='')],
+        [r'^\n$', 1, +1, '', lambda x: print(x, end='')],
+        [r'^.*$', 0, +1, 'NO', None],
+    ],
+    [ # State 1:
+        [r'^$', 1, -1, 'YES', None]
+    ]
+])
+</code></pre>
+
+<p>Obfuscation again consists of converting the above code into lambda functions using Y combinators.  This is a pretty fantastic programming exercise, so I've left it out of this post in case anyone wants to try.  And of course the Turing machine has to return 'YES' to indicate that it accepts the string, thus the assertion.  Our final obfuscated JAPH looks like this, amazingly in a single expression:</p>
+
+<pre><code class="py">assert'''YES'''==(lambda g:(lambda f:g(lambda arg:f(f)(arg)))(lambda f:g(
+lambda arg: f(f)(arg))))(lambda f: lambda q:[(lambda g:(lambda f:g(lambda
+arg:f(f)(arg)))(lambda f: g(lambda arg:f(f)(arg))))(lambda f: lambda x:(x
+[0][0]if x[0] and __import__('re').match(x[0][0][0],x[1])else f([x[0][1:]
+,x[1]]))) ([q[3][q[1]],q[2].get(q[0],'')])[4](q[2].get(q[0],'')), (lambda
+g:(lambda f:g(lambda arg:f(f)(arg))) (lambda f:g(lambda arg:f(f)(arg))))(
+lambda f:lambda x:(x[0][0]if x[0] and __import__('re').match(x[0][0][0],x
+[1])else f([x[0][1:],x[1]])))([q[3][q[1]],q[2].get(q[0],'')])[3]if(lambda
+g:(lambda f:g(lambda arg:f(f)(arg))) (lambda f:g(lambda arg:f(f)(arg))))(
+lambda f:lambda x:(x[0][0]if x[0]and __import__('re').match(x[0][0][0],x[
+1]) else f([x[0][1:],x[1]])))([q[3][q[1]],q[2].get(q[0],'')])[3]in('YES',
+'NO')else f([q[0]+(lambda g:(lambda f:g(lambda arg:f(f)(arg)))(lambda f:g
+(lambda arg:f(f)(arg))))(lambda f:lambda x:(x[0][0]if x[0]and __import__(
+'re').match(x[0][0][0],x[1])else f([x[0][1:], x[1]])))([q[3][q[1]], q[2].
+get(q[0],'')])[2],(lambda g:(lambda f:g(lambda arg: f(f)(arg)))(lambda f:
+g(lambda arg:f(f)(arg))))(lambda f:lambda x:(x[0][0]if x[0]and __import__
+('re').match(x[0][0][0],x[1])else f([x[0][1:], x[1]])))([q[3][q[1]],q[2].
+get(q[0],'')])[1],q[2],q[3]])][1])([0,0,{i:x for i,x in enumerate('just '
+'another python hacker\n')}, [[[r'^[a-z ]$',0,+1,'',lambda x:print(x,end=
+'')], [r'^\n$',1,+1,'',lambda x:print(x, end='')],[r'^.*$',0,+1,'''NO''',
+lambda x:None]], [[r'''^$''',+1,-1,'''YES''', lambda x: None or None]]]])
+</code></pre>
+
+{% endblock %}

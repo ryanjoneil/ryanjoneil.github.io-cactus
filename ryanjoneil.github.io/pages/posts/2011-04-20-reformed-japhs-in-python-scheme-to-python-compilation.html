@@ -1,0 +1,158 @@
+title: reformed japhs in python - scheme to python compilation
+author: Ryan J. O'Neil
+date: 20-04-2011
+
+{% extends "post.html" %}
+
+{% block post %}
+
+<p>I believe this is the final JAPH in this series. I actually didn't have the heart to obfuscate it. It starts with a Scheme program that prints 'just another scheme hacker', tokenizes it, parses the token stream, compiles that into Python 3.2, and executes the resulting string. If anybody else wants to obfuscate it, be my guest. Otherwise I'll just let it speak for itself.</p>
+
+<pre><code class="py">import re
+
+def tokenize(input):
+    '''Tokenizes an input stream into a list of recognizable tokens'''
+    token_res = (
+        r'\(',      # open paren -> starts expression
+        r'\)',      # close paren -> ends expression
+        r'"[^"]*"', # quoted string (don't support \" yet)
+        r'[\w?]+'   # atom
+    )
+    return re.findall(r'(' + '|'.join(token_res) + ')', input)
+
+def parse(stream):
+    '''Parses a token stream into a syntax tree'''
+    if not stream:
+        return []
+
+    else:
+        # Build a list of arguments (possibly expressions) at this level
+        args = []
+        while True:
+            # Get the next token
+            try:
+                x = stream.pop(0)
+            except IndexError:
+                return args
+
+            # ( and ) control the level of the tree we're at
+            if x == '(':
+                args.append(parse(stream))
+            elif x == ')':
+                return args
+            else:
+                args.append(x)
+
+def compile(tree):
+    '''Compiles an Scheme Abstract Syntax Tree into near-Python'''
+    def compile_expr(indent, expr):
+        indent += 1
+
+        lines = [] # these will have [(indent, statement), ...] structure
+        while expr:
+            # Two options: expr is a string like "'" or it is a list
+            if isinstance(expr, str):
+                return [(
+                    indent,
+                    expr.replace('scheme', 'python').replace('\n', '\\n')
+                )]
+
+            else:
+                start = expr.pop(0)
+
+                if start == 'define':
+                    signature = expr.pop(0)
+                    lines.append((indent,
+                        'def %s(%s):' % (
+                            signature[0],
+                            ', '.join(signature[1:])
+                        )
+                    ))
+                    while expr:
+                        lines.extend(compile_expr(indent, expr.pop(0)))
+
+                elif start == 'if':
+                    # We don't support multi-clause conditionals yet
+                    clause = compile_expr(indent, expr.pop(0))[0][1]
+                    lines.append((indent, 'if %s:' % clause))
+
+                    if_true_lines = compile_expr(indent, expr.pop(0))
+                    if_false_lines = compile_expr(indent, expr.pop(0))
+
+                    lines.extend(if_true_lines)
+                    lines.append((indent, 'else:'))
+                    lines.extend(if_false_lines)
+
+                elif start == 'null?':
+                    # Only supports conditionals of the form (null? foo)
+                    if isinstance(expr[0], str):
+                        condition = expr.pop(0)
+                    else:
+                        condition = compile_expr(indent, expr.pop(0))[0][1]
+                    return [(indent, 'not %s' % condition)]
+
+                elif start == 'begin':
+                    # This is just a series of statements, so don't indent
+                    while expr:
+                        lines.extend(compile_expr(indent-1, expr.pop(0)))
+
+                elif start == 'display':
+                    arguments = []
+                    while expr:
+                        arguments.append(
+                            compile_expr(indent, expr.pop(0))[0][1]
+                        )
+                    lines.append((
+                        indent,
+                        "print(%s, end='')" % (', '.join(arguments))
+                    ))
+
+                elif start == 'car':
+                    lines.append((indent, '%s[0]' % expr.pop(0)))
+
+                elif start == 'cdr':
+                    lines.append((indent, '%s[1:]' % expr.pop(0)))
+
+                elif start == 'list':
+                    arguments = []
+                    while expr:
+                        arguments.append(
+                            compile_expr(indent, expr.pop(0))[0][1]
+                        )
+                    lines.append((indent, '[%s]' % ', '.join(arguments)))
+
+                else:
+                    # Assume this is a function call
+                    arguments = []
+                    while expr:
+                        arguments.append(
+                            compile_expr(indent, expr.pop(0))[0][1]
+                        )
+                    lines.append((
+                        indent,
+                        "%s(%s)" % (start, ', '.join(arguments))
+                    ))
+
+        return lines
+
+    return [compile_expr(-1, expr) for expr in tree]
+
+if __name__ == '__main__':
+    scheme = '''
+        (define (output x)
+            (if (null? x)
+                ""
+                (begin (display (car x))
+                       (if (null? (cdr x))
+                           (display "\n")
+                           (begin (display " ")
+                                  (output (cdr x)))))))
+        (output (list "just" "another" "scheme" "hacker"))
+    '''
+    python = ''
+    for expr in compile(parse(tokenize(scheme))):
+        python += '\n'.join([(' ' * 4 * x[0]) + x[1] for x in expr]) + '\n\n'
+    exec(python)
+</code></pre>
+
+{% endblock %}
