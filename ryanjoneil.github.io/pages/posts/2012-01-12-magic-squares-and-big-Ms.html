@@ -1,0 +1,47 @@
+title: Magic Squares and Big-Ms
+author: Ryan J. O'Neil
+date: 12-01-2012
+category: Optimization
+lang: Python
+description: An integer programming formulation of the magic squares problem.
+
+{% extends "post.html" %}
+
+{% block post %}
+
+<p>When I visited the LA PyLadies <a href="http://www.meetup.com/la-pyladies/events/34789522/">back in October</a> of 2011, I started toying with a model for finding <a href="http://en.wikipedia.org/wiki/Magic_square">Magic Squares</a> in python-zibopt.  As a modeling exercise, this is fun but not too terribly challenging.  Construct a square matrix of integer-valued variables and add the following constraints:</p>
+
+<ol>
+<li>All variables &gt;= 1.</li>
+<li>All rows, columns, and the diagonal sum to the same value.</li>
+<li>All variables take different values.</li>
+</ol>
+
+<p><i>Admittedly, I had <a href="http://code.google.com/p/python-zibopt/wiki/ChangeLog#0.7.2_dev">a few bugs</a> to fix in the code before I could get this working.  If you'd like to run it yourself, the model is <a href="http://code.google.com/p/python-zibopt/source/browse/trunk/examples/magic-square.py">here</a>.  It works against the latest development version in svn trunk of python-zibopt and python-algebraic 0.3.1.  When python-zibopt 0.7.2-dev is tagged soon, it will be a part of that.</i></p>
+
+<p>The first two constraint types are trivial to implement, and relatively easy for the solver.  What I do is add a single extra variable then set it equal to the sums of each row, column, and the diagonal.</p>
+
+<p>It's the third that messes things up.  You can think of this as saying, for every possible pair of integer-valued variables x &amp; y:</p>
+
+<center><p>Either x &gt;= y + 1 or x &lt;= y - 1.</p></center>
+
+<p>Why is this hard?  Because we can't add both constraints to the model and maintain feasibility.  What we have to do is add them in such a way that exactly one will be active for any any given solution.  This requires, for each pair of variables, an additional binary variable (we will call this z) and a <a href="http://www.inf.ufpr.br/aurora/disciplinas/topicosia2/livros/search/integer.pdf">(possibly big) constant (M)</a>.  Thus the above must be reformulated as the following before adding it to our model:</p>
+
+<center><p>
+x &gt;= (y + 1) - M*z<br/>
+x &lt;= (y - 1) + M*(1-z)
+</p></center>
+
+<p>All of a sudden, <a href="http://orinanobworld.blogspot.com/2011/07/perils-of-big-m.html">here be dragons</a>.  We may not know how big or small to make M.  Generally we want it as small as possible to avoid playing too much havoc with the LP relaxations of our integer programming model.  It contributes to rounding errors (in the magic square problem, if I make M really big, all the variables will come back as 1).  Setting M to different values may have an unpredictable effect on the solution time of a given model.  So on, so forth.</p>
+
+<p>Which brings us to an interesting idea:</p>
+
+<p>SCIP now supports bilinear constraints out of the box.  This means that I can make M a variable in the above model.  (Heck, I can even make it an integer variable if I'm feeling particularly insane.)</p>
+
+<p>The magic square model linked to in this post (the astute reader will notice it does not solve the <i>normal</i> magic square problem) provides both methods.  The first command line argument it requires is the matrix size.  The second one, M, is optional.  If not given, it will leave M up to the solver.</p>
+
+<p>I didn't expect this to perform as well as providing sensible values for M, but for small matrices it didn't perform too terribly worse either.  Not quite twice the run time in most of my unscientific tests.  Given the early state of MINLP development, that's pretty encouraging.</p>
+
+<p>I'd love to see what one of the many far more knowledgeable OR bloggers out there has to say about this.</p>
+
+{% endblock %}

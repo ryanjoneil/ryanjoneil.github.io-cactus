@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import os
 import datetime
 import logging
@@ -5,6 +6,8 @@ import logging
 ORDER = 999
 POSTS_PATH = 'posts/'
 POSTS = []
+CATS = OrderedDict({'Data Science': [], 'Optimization': [], 'Programming': []})
+LANGS = OrderedDict({'Python': [], 'R': []})
 
 from django.template import Context
 from django.template.loader import get_template
@@ -50,9 +53,12 @@ def preBuild(site):
             postContext['title'] = find('title')
             postContext['author'] = find('author')
             postContext['date'] = find('date')
+            postContext['category'] = find('category')
+            postContext['lang'] = find('lang')
             postContext['path'] = page.path
             postContext['post'] = getNode(get_template(page.path), name="post")
-            print postContext
+            postContext['description'] = find('description')
+
             # Parse the date into a date object
             try:
                 postContext['date'] = datetime.datetime.strptime(postContext['date'], '%d-%m-%Y')
@@ -72,6 +78,12 @@ def preBuild(site):
         if i+1 in indexes: POSTS[i]['prevPost'] = POSTS[i+1]
         if i-1 in indexes: POSTS[i]['nextPost'] = POSTS[i-1]
 
+    # Add them to the category and language dicts
+    for post in POSTS:
+        if post['category']:
+            CATS[post['category']].append(post)
+        if post['lang'] in LANGS:
+            LANGS[post['lang']].append(post)
 
 def preBuildPage(site, page, context, data):
     """
@@ -79,6 +91,9 @@ def preBuildPage(site, page, context, data):
     access them from wherever on the site.
     """
     context['posts'] = POSTS
+    context['cats'] = CATS
+    context['lang_r'] = LANGS['R']
+    context['lang_py'] = LANGS['Python']
 
     for post in POSTS:
         if post['path'] == page.path:

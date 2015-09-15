@@ -1,0 +1,78 @@
+title: Joy in the Time of the Python futures Module
+author: Ryan J. O'Neil
+date: 27-04-2011
+category: Programming
+lang: Python
+description: Exploit multicore architectures with ease and the Python futures module!
+
+{% extends "post.html" %}
+
+{% block post %}
+
+<p>Starting with a does of realism, it's possible this will turn out like the day when <a href="http://docs.python.org/release/2.5/whatsnew/pep-342.html">coroutines were introduced into Python 2.5</a>.  At the time I was extremely excited.  Upon hearing the news I spent several hours trying to convince developers at my then-employer that the only way we could survive as an organization was to immediately abandon all our existing Java infrastructure, porting it to a new and beautiful world based on finite state machines implemented using Python coroutines.  After a day of hand waving over a proof of concept, we all continued about our lives.  Soon after, I left for a Python shop, but in the next half decade I still never found a good place to use this beloved feature in solving the daily challenges of my professional life.</p>
+
+<p>As I come to terms more with switching to Python 3.2, the <a href="http://docs.python.org/py3k/library/concurrent.futures.html">futures</a> module emerges as a source of similar excitement.  This is one of those would-have-made-my-life-so-much-easier features I wish I'd had years ago, and is almost reason in itself to upgrade from Python 2.7.  <i>Who cares if none of your libraries have been ported yet?</i></p>
+
+<p>I think the real strength of this library springs from its ability to take any pre-existing function and distribute it over a process pool.  Here is an example that computes minimum spanning trees for fully connected graphs.  For purposes of testing, we generate 100-node fully connected graphs with random arc weights between 1 and 10.  We then find their minimum spanning trees using the <a href="http://code.google.com/p/python-graph/">pygraph</a> library, using groups of 4, 8, ..., 28 random graphs in serial and in parallel.  Note how easy it is to take the minimum spanning tree function and map it over a process pool without any changes to its code.</p>
+
+<pre><code class="py">from concurrent import futures
+from csv import writer
+from pygraph.algorithms import minmax
+from pygraph.classes.graph import graph
+import random
+import string
+import sys
+import time
+
+def generate_graph():
+    # Generates a randomly weighted, fully-connected, undirected graph
+    nodes = [str(i) for i in range(100)]
+
+    g = graph()
+    for n in nodes:
+        g.add_node(n)
+
+    # Build an edge from each node to every other node
+    for i, n in enumerate(nodes):
+        for o in nodes[i+1:]:
+            weight = random.uniform(1, 10)
+            g.add_edge((n, o), weight)
+
+    return g
+
+def serial_test(graphs):
+    for g in graphs:
+        tree = minmax.minimal_spanning_tree(g)
+
+def parallel_test(graphs, max_workers):
+    with futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
+        for tree in executor.map(minmax.minimal_spanning_tree, graphs):
+            pass # normally we'd do something with this...
+
+if __name__ == '__main__':
+    out = writer(sys.stdout)
+    out.writerow(['num graphs', 'serial time', 'parallel time'])
+
+    # Run with a number of different randomly generated graphs
+    for num_graphs in (4, 8, 12, 16, 20, 24, 28):
+        graphs = [generate_graph() for _ in range(num_graphs)]
+
+        start = time.clock()
+        serial_test(graphs)
+        serial_time = time.clock() - start
+
+        start = time.clock()
+        parallel_test(graphs, 4)
+        parallel_time = time.clock() - start
+
+        out.writerow([num_graphs, serial_time, parallel_time])</code></pre>
+
+<p>The output of this script shows that we get a fairly linear speedup in this particular example with little to no effort.</p>
+
+<center><img src="/static/images/2011/python-futures/times_minimal_spanning_tree.png" /></center>
+
+<p>Given that the box I'm running this on has 4 cores, it's a little odd that the speedup factor is more like 2.  It's probably just that the machine has a lot going on, so it's not really worth investigating right now.  At the very least, each core is kept busy when the test forks.</p>
+
+<center><img width="100%" src="/static/images/2011/python-futures/post2-performance.png" /></center>
+
+{% endblock %}

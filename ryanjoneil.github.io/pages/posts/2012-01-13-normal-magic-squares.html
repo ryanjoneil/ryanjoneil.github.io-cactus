@@ -1,0 +1,18 @@
+title: Normal Magic Squares
+author: Ryan J. O'Neil
+date: 13-01-2012
+category: Optimization
+lang: Python
+description: An integer programming formulation of the normal magic squares problem.
+
+{% extends "post.html" %}
+
+{% block post %}
+
+<p>As a followup to yesterday's post, I created <a href="http://code.google.com/p/python-zibopt/source/browse/trunk/examples/normal-magic-square.py">another python-zibopt example</a> for finding <a href="2012-01-12-magic-squares-and-big-Ms.html">Normal Magic Squares</a>.  This is similar to <a href="http://code.google.com/p/python-zibopt/source/browse/trunk/examples/sudoku.py">the Sudoku example</a>, except that here the number of binary variables depends on the square size.  In the case of Sudoku, each cell has 9 binary variables -- one for each potential value it might take.  For a normal magic square, there are $n^2$ possible values for each cell, $n^2$ cells, and one variable representing the row, column, and diagonal sums.  This makes a total of $n^4$ binary variables and one continuous variables in the model.</p>
+
+<p>However, there are no big-Ms.</p>
+
+<p>I think the neat part of this code is in <a href="http://code.google.com/p/python-zibopt/source/browse/trunk/examples/normal-magic-square.py#57">lines 57-62</a>.  It creates sums of the $n^2$ variables for each cell with their appropriate coefficients (1 to n^2) and stores those expressions to make the <a href="http://code.google.com/p/python-zibopt/source/browse/trunk/examples/normal-magic-square.py#66">subsequent constraint creation</a> simpler <i>(try doing that in your modeling language!)</i>.  All made possible thanks to python-algebraic.</p>
+
+{% endblock %}

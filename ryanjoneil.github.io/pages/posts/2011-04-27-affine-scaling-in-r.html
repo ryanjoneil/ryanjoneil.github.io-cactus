@@ -1,0 +1,88 @@
+title: Affine Scaling in R
+author: Ryan J. O'Neil
+date: 27-04-2011
+category: Optimization
+lang: R
+description: Affine scaling for interior point optimization in R.
+
+{% extends "post.html" %}
+
+{% block post %}
+
+<p>I recently stumbled across an implementation of the <a href="http://demonstrations.wolfram.com/AffineScalingInteriorPointMethod/">affine scaling</a> <a href="http://en.wikipedia.org/wiki/Interior_point_method">interior point method</a> for solving linear programs that I'd coded up in R once upon a time. I'm posting it here in case anyone else finds it useful. There's not a whole lot of thought given to efficiency or numerical stability, just a demonstration of the basic algorithm. Still, sometimes that's exactly what one wants.</p>
+
+<pre><code class="r">solve.affine <- function(A, rc, x, tolerance=10^-7, R=0.999) {
+  # Affine scaling method
+  while (T) {
+    X_diag <- diag(x)
+
+    # Compute (A * X_diag^2 * A^t)-1 using Cholesky factorization.
+    # This is responsible for scaling the original problem matrix.
+    q <- A %*% X_diag**2 %*% t(A)
+    q_inv <- chol2inv(chol(q))
+
+    # lambda = q * A * X_diag^2 * c
+    lambda <- q_inv %*% A %*% X_diag^2 %*% rc
+
+    # c - A^t * lambda is used repeatedly
+    foo <- rc - t(A) %*% lambda
+
+    # We converge as s goes to zero
+    s <- sqrt(sum((X_diag %*% foo)^2))
+
+    # Compute new x
+    x <- (x + R * X_diag^2 %*% foo / s)[,]
+
+    # If s is within our tolerance, stop.
+    if (abs(s) < tolerance) break
+  }
+  x
+}</code></pre>
+
+<p>This function accepts a matrix A which contains all technological coefficients for an LP, a vector rc containing its reduced costs, and an initial point x interior to the LP's feasible region. Optional arguments to the function include a tolerance, for detecting when the method is within an acceptable distance from the optimal point, and a value for R, which must be strictly between 0 and 1 and controls scaling.</p>
+
+<p>The method works by rescaling the matrix A around the current solution x. It then computes a new x such that it remains feasible and interior, which is why R cannot be 0 or 1. It requires a feasible interior point to start and only projects to other feasible interior points, so the right hand side of the LP is not required (it is implicit from the starting point). The shadow prices for each iteration are captured in the vector lambda, so the gap between primal and dual solutions is easy to compute.</p>
+
+<p>We run this function against a 3x3 LP with a known solution:</p>
+
+<pre>
+max z = 5x1 + 4x2 + 3x3
+st      2x1 + 3x2 +  x3 <=  5
+        4x1 +  x2 + 2x3 <= 11
+        3x1 + 4x2 + 2x3 <=  8
+        x1, x2, x3 >= 0
+</pre>
+
+<p>The optimal solution to this LP is:</p>
+
+<pre>
+z  = 13
+x1 =  2
+x2 =  0
+x3 =  1
+</pre>
+
+<p>This problem can be run against the affine scaling function by defining A with all necessary slack variables, and using an arbitrary feasible interior point:</p>
+
+<pre><code class="r">A <- matrix(c(
+  2,3,1,1,0,0,
+  4,1,2,0,1,0,
+  3,4,2,0,0,1
+), nrow=3, byrow=T)
+rc <- c(5, 4, 3, 0, 0, 0)
+x  <- c(0.5, 0.5, 0.5, 2, 7.5, 3.5)
+
+solution <- solve.affine(A, rc, x)
+print(solution)
+print(sum(solution * rc))</code></pre>
+
+<p>This provides an output vector that is very close to the optimal primal solution shown above. Since interior point methods converge asymptotically to optimal solutions, it is important to note that we can only ever get (extremely) close to our final optimal objective and decision variable values.</p>
+
+<pre><code class="r">print(solution)
+[1] 1.999998e+00 4.268595e-07 1.000002e+00 1.280579e-06 1.000005e+00
+[6] 1.280579e-06
+
+print(sum(solution * rc))
+[1] 13.00000</code></pre>
+
+{% endblock %}

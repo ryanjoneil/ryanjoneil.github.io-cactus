@@ -4,29 +4,28 @@
 <div class="jumbotron">
   <div class="container">
     <h1>adventures in optimization</h1>
-    <p>The charming adventures of a data scientist and his solver.</p>
+    <p>The charming adventures of <a href="mailto:ryanjoneil@gmail.com">a data scientist</a> and his solver.</p>
   </div>
 </div>
 
 <div class="container">
   <div class="content-outer">
   	<div class="content-header">
-  		{% if prevPost %}
+		{% if prevPost %}
 			<a href='/{{ prevPost.path }}'>&laquo;</a>
 		{% endif %}
 
-		{{ date|date:"l, F j, Y" }}
+	   	{{ date|date:"l, F j, Y" }}
 
-  		{% if nextPost %}
+		{% if nextPost %}
 			<a href='/{{ nextPost.path }}'>&raquo;</a>
 		{% endif %}
   	</div>
 
 	<div class="content-inner">
 		<h2>{{ title }}</h2>
-
-	  	{% block post %}
-	  	{% endblock %}
+      {% if description %}<p><em>{{ description }}</em></p>{% endif %}
+	  	{% block post %}{% endblock %}
   	</div>
   </div>
 </div>

@@ -17,10 +17,12 @@
 
   {% for post in posts %}
   <entry>
-    <title type="text">{{ post.title }}]]</title>
+    <title type="text">{{ post.title }}</title>
     <link href="http://ryanjoneil.github.io/{{ post.path }}"/>
     <updated>{{ post.date|date:"c" }}</updated>
     <id>http://ryanjoneil.github.io/{{ post.path }}</id>
+    <description>{{ post.description }}</description>
+    <content type="html"><![CDATA[{{ post.post|truncatewords_html:100 }}]]></content>
   </entry>
   {% endfor %}
 </feed>

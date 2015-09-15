@@ -1,0 +1,54 @@
+title: Know Your Time Complexities
+author: Ryan J. O'Neil
+date: 25-10-2011
+category: Programming
+lang: Python
+description: The importance of time complexity in basic programming.
+
+{% extends "post.html" %}
+
+{% block post %}
+
+<p><i>This is based on a lightning talk I gave at the LA PyLadies <a href="http://www.meetup.com/la-pyladies/events/34789522/">October Hackathon</a>.</i></p>
+
+<p>I'm actually not going to go into anything much resembling algorithmic complexity here.  What I'd like to do is present a common performance anti-pattern that I see from novice programmers about once every year or so.  If I can prevent one person from committing this error, this post will have achieved its goal.  I'd also like to show how an intuitive understanding of time required by operations in relation to the size of data they operate on can be helpful.<br /></p>
+
+<p>Say you have a Big List of Things.  It doesn't particularly matter what these things are.  Often they might be objects or dictionaries of denormalized data.  In this example we'll use numbers.  Let's generate a list of 1 million integers, each randomly chosen from the first 100 thousand natural numbers:</p>
+
+<pre><code class="py">import random
+
+choices = range(100000)
+x = [random.choice(choices) for i in xrange(1000000)]
+</code></pre>
+
+<p>Now say you want to remove <i>(or aggregate, or structure)</i> duplicate data while keeping them <i>in order of appearance</i>.  Intuitively, this seems simple enough.  A first solution might involve creating a new empty list, iterating over x, and only appending those items that are not already in the new list:</p>
+
+<h4>The Bad Way</h4>
+
+<pre><code class="py">order = []
+for i in x:
+    if i not in order:
+        order.append(i)
+</code></pre>
+
+<p>Try running this.  What's wrong with it?</p>
+
+<p>The issue is the conditional on line 3.  In the worst case, it could look at every item in the order list for each item in x.  If the list is big, as it is in our example, that wastes a lot of cycles.  We can reason that we can improve the performance of our code by replacing this conditional with something faster.</p>
+
+<p>Given that sets have near constant time for membership tests, one solution is to create a companion data structure, which we'll call seen.  Being a set, it doesn't care about the order of the items, but it will allow us to test for membership quickly:</p>
+
+<h4>The Good Way</h4>
+
+<pre><code class="py">order = []
+seen = set()
+for i in x:
+    if i not in seen:
+        seen.add(i)
+        order.append(i)
+</code></pre>
+
+<p>Now try running this.  Better?</p>
+
+<p>Not that this is the best way to perform this particular action.  If you aren't familiar with it, take a look at the <a href="http://docs.python.org/library/itertools.html#itertools.groupby">groupby</a> function from itertools, which is what I will sometimes reach for in a case like this.</p>
+
+{% endblock %}

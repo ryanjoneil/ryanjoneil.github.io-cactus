@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="jumbotron">
+  <div class="container">
+    <h1>adventures in optimization</h1>
+    <p>The charming adventures of <a href="mailto:ryanjoneil@gmail.com">a data scientist</a> and his solver.</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content-outer">
+    <!--div class="content-header">
+      Blog Posts:
+    </div-->
+
+    <div class="content-inner">
+      <h2>Python Posts</h2>
+
+      <h3><a href="blog-{{ cat|slugify }}.html">{{ cat }}</a></h3>
+      <ul>
+      {% for post in lang_py %}
+        <li>
+            <p>
+              <a href='{{ post.path }}'>{{ post.title }}</a>
+              {% if post.category %}(<a href="blog-{{ post.category|slugify }}.html">{{ post.category }}</a>){% endif %}
+              {% if post.description %}<br/>{{ post.description }}{% endif %}
+            </p>
+        </li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

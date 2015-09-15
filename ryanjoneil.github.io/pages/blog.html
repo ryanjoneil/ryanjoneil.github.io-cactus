@@ -4,7 +4,7 @@
 <div class="jumbotron">
   <div class="container">
     <h1>adventures in optimization</h1>
-    <p>The charming adventures of a data scientist and his solver.</p>
+    <p>The charming adventures of <a href="mailto:ryanjoneil@gmail.com">a data scientist</a> and his solver.</p>
   </div>
 </div>
 
@@ -15,13 +15,22 @@
     </div-->
 
     <div class="content-inner">
-      <h2>posts by date</h2>
+      <h2>Blog Posts by Category</h2>
 
+      {% for cat, cat_posts in cats.items %}
+      <h3><a href="blog-{{ cat|slugify }}.html">{{ cat }}</a></h3>
       <ul>
-        {% for post in posts %}
-          <li><a href='{{ post.path }}'>{{ post.date|date:"F j, Y"}}: {{ post.title }}</a></li>
+        {% for post in cat_posts %}
+          <li>
+              <p>
+                <a href='{{ post.path }}'>{{ post.title }}</a>
+                {% if post.lang %}({% ifequal post.lang 'R' %}<a href="blog-r.html">R</a>{% else %}{% ifequal post.lang 'Python' %}<a href="blog-r.html">Python</a>{% else %}{{ post.lang }}{% endifequal %}{% endifequal %}){% endif %}
+                {% if post.description %}<br/>{{ post.description }}{% endif %}
+              </p>
+          </li>
         {% endfor %}
       </ul>
+      {% endfor %}
     </div>
   </div>
 </div>

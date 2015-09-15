@@ -1,0 +1,70 @@
+title: Uncapacitated Lot Sizing Formulation
+author: Ryan J. O'Neil
+date: 20-02-2009
+category: Optimization
+description: Formulation and aspects of the Uncapacitated Lot Sizing problem in Integer Programming.
+
+{% extends "post.html" %}
+
+{% block post %}
+
+<p>Uncapacitated Lot Sizing (ULS) is a classic <a href="http://en.wikipedia.org/wiki/Operations_research">OR</a> problem that seeks to minimize the cost of satisfying known demand for a product over time.  Demand is subject to varying costs for production, set-up, and storage of the product.  Technically, it is a mixed binary integer linear program -- the key point separating it from the world of <a href="http://en.wikipedia.org/wiki/Linear_programming">linear optimization</a> being that production cannot occur during any period without paying that period's fixed costs for set-up.  Thus it has linear nonnegative variables for production and storage amounts during each period, and a binary variable for each period that determines whether or not production can actually occur.</p>
+
+<p>For $n$ periods with per-period fixed set-up cost $f_t$, unit production cost $p_t$, unit storage cost $h_t$,and demand $d_t$, we define decision variables related to production and storage quantities:</p>
+
+<p>
+<center>
+$x_t =$ units produced in period $t$<br />
+$s_t =$ stock at the end of period $t$<br />
+$y_t = 1$ if production occurs in period $t$, $0$ otherwise<br />
+</center>
+</p>
+
+<p>One can minimize overall cost for satisfying all demand on time using the following model per <a href="http://www.amazon.com/Integer-Programming-Laurence-Wolsey/dp/0471283665/ref=pd_bbs_sr_1?ie=UTF8&amp;s=books&amp;qid=1235083688&amp;sr=8-1">Wolsey (1998)</a>, defined slightly differently here:</p>
+
+<p>
+<center>
+<table><tbody><tr><td valign="top">$\min$</td><td colspan="4">$z = \sum_t{p_t x_t} + \sum_t{h_t s_t} + \sum_t{f_t y_t}$</td></tr>
+<tr><td al="" valign="top">s.t.</td><td align="right">$s_1$</td><td>$=$</td><td>$d_1 + s_1$</td><td></td></tr>
+<tr><td></td><td align="right">$s_{t-1} + x_t$</td><td>$=$</td><td>$d_t + s_t$</td><td>$\forall t > 1$</td></tr>
+<tr><td></td><td align="right">$x_t$</td><td>$\leq$</td><td>$M y_t$</td><td>$\forall t$</td></tr>
+<tr><td></td><td align="right">$s_t, x_t$</td><td>$\geq$</td><td>$0$</td><td>$\forall t$</td></tr>
+<tr><td></td><td align="right">$y_t$</td><td>$\in$</td><td>$\{0,1\}$</td><td>$\forall t$</td></tr></tbody></table>
+</center>
+</p>
+
+<p>According to Wolsey, page 11, given that $s_t = \sum_{i=1}^t (x_i - d_i)$ and defining new constants $K = \sum_{t=1}^n h_t(\sum_{i=1}^t d_i)$ and $c_t = p_t + \sum_{i=t}^n h_i$, the objective function can be rewritten as $z = \sum_t c_t x_t + \sum _t f_t y_t - K$.  The book lacks a proof of this and it seems a bit non-obvious, so I attempt an explanation in somewhat painstaking detail here.</p>
+
+<p>
+<center>
+<table width="500"><tbody>
+<tr><td colspan="3" valign="top">Proof:</td></tr>
+<tr><td colspan="1" align="right">$\sum_t p_t x_t + \sum_t h_t s_t + \sum_t f_t y_t$</td><td valign="top">$=$</td><td>$\sum_t c_t x_t + \sum _t f_t y_t - K$</td></tr>
+<tr><td colspan="3" valign="top">1. Eliminate $\sum_t f_t y_t$:</td></tr>
+<tr><td align="right">$\sum_t p_t x_t + \sum_t h_t s_t$</td>
+<td valign="top">$=$</td><td>$\sum_t c_t x_t - K$</td></tr>
+<tr><td colspan="3">2. Expand $K$ and $c_t$:</td></tr>
+<tr><td align="right">$\sum_t p_t x_t + \sum_t h_t s_t$</td><td>$=$</td>
+<td>$\sum_t (p_t + \sum_{i=t}^n h_i) x_t - \sum_t h_t (\sum_{i=1}^t d_i)$</td></tr>
+<tr><td colspan="3">3. Eliminate $\sum_t p_t x_t$:</td></tr>
+<tr><td align="right">$\sum_t h_t s_t$</td>
+<td>$=$</td><td>$\sum_t x_t (\sum_{i=t}^n h_i) - \sum_t h_t (\sum_{i=1}^t d_i)$</td></tr>
+<tr><td colspan="3">4. Expand $s_t$:</td></tr>
+<tr><td align="right">$\sum_t h_t (\sum_{i=1}^t x_i) - \sum_t h_t (\sum_{i=1}^t d_i)$</td><td>$=$</td><td>$\sum_t x_t (\sum_{i=t}^n h_i) - \sum_t h_t (\sum_{i=1}^t d_i)$</td></tr>
+<tr><td colspan="3">5. Eliminate $\sum_t h_t (\sum_{i=1}^t d_i)$:</td></tr>
+<tr><td align="right">$\sum_t h_t (\sum_{i=1}^t x_i)$</td><td>$=$</td><td>$\sum_t x_t (\sum_{i=t}^n h_i)$</td></tr>
+</tbody></table>
+</center></p>
+
+<p>The result from step 5 becomes obvious upon expanding its left and right-hand terms:</p>
+
+<p><center>$h_1 x_1 + h_2 (x_1 + x_2) + \cdots + h_n (x_1 + \cdots + x_n) = $ $x_1 (h_1 + \cdots + h_n) + x2 (h_2 + \cdots + h_n) + \cdots + x_n h_n$.</center></p>
+
+<p>In matrix notation with $h$ and $x$ as column vectors in $\bf R^n$ and $L$ and $U$ being $n x n$ lower and upper triangular identity matrices, respectively, this can be written as:</p>
+
+<p><center>
+$\left(h_1 \cdots h_n\right)\left(\matrix{1 \cdots 0 \cr \vdots\ddots \vdots \cr 1 \cdots 1}\right)\left(\matrix{x_1 \cr \vdots \cr x_n}\right) = \left(x_1 \cdots x_n \right)\left(\matrix{1 \cdots 1 \cr \vdots \ddots \vdots \cr 0 \cdots 1}\right)\left(\matrix{h_1 \cr \vdots \cr h_n}\right)$</center></p>
+
+<p>or $h^T L x = x^T U h$.</p>
+
+{% endblock %}
