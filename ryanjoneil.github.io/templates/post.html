@@ -11,7 +11,15 @@
 <div class="container">
   <div class="content-outer">
   	<div class="content-header">
-  		{{ date|date:"l, F j, Y" }}
+  		{% if prevPost %}
+			<a href='/{{ prevPost.path }}'>&laquo;</a>
+		{% endif %}
+
+		{{ date|date:"l, F j, Y" }}
+
+  		{% if nextPost %}
+			<a href='/{{ nextPost.path }}'>&raquo;</a>
+		{% endif %}
   	</div>
 
 	<div class="content-inner">

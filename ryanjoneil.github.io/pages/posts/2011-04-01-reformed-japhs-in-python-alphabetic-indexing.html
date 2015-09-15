@@ -1,0 +1,42 @@
+title: reformed japhs in python - alphabetic indexing
+author: Ryan J. O'Neil
+date: 01-04-2011
+
+{% extends "post.html" %}
+
+{% block post %}
+
+<p>Full disclosure: I used to be a Perl programmer. (Hey, <a href="http://drforr.livejournal.com/">Jeff.</a>)</p><p>One day I became disillusioned at the progress of Perl 6 and decided to <a href="http://www.python.org/dev/peps/pep-0020/">import this</a>.  This appears to be a fairly common story for Perl to Python converts.  While I haven't looked back much, there are a number of things I really miss about perl <i>(lower case intentional)</i>.  Among other things, I miss having value types in a dynamic language, magical and ill-advised use of <a href="http://www.foo.be/docs/tpj/issues/vol3_1/tpj0301-0003.html">cryptocontext</a>, and sometimes even <a href="http://perldesignpatterns.com/?PseudoHash">pseudohashes</a> because they were inexcusably weird.  A language that supports so many ideas out of the box enables an extended learning curve that lasts for <a href="http://silver.sucs.org/~manic/humour/languages/perlhacker.htm">many years</a>.  "Perl itself is the game."</p
+
+><p>Most of all I think I miss writing Perl <a href="http://www.perlmonks.org/?node=Perl%20Poetry">poetry</a> and <a href="http://en.wikipedia.org/wiki/Just_another_Perl_hacker">JAPHs</a>.  Stupidly, I didn't keep any of those I wrote, and I'm not competent enough with the language anymore to write interesting ones.  At the time I was intentionally distancing myself from a model that was largely implicit and based on understanding of archaic system internals and moving to one that was (supposedly) explicit and simple.  After switching to Python as my primary language, I used the following email signature in a nod to this change in worldview <i>(intended for Python 2.x)</i>:</p>
+
+<pre><code class="py">print 'just another python hacker'</code></pre>
+
+<p>Recently I've been experimenting with writing JAPHs in Python.  I think of these as reformed JAPHs.  They accomplish the same purpose as programming exercises but exist with a far more restricted context.  In some ways they are more challenging.  Creativity is difficult when functioning within a more explicit landscape.  I now have a small series of reformed JAPHs dedicated to a close friend which increase monotonically in complexity.  Here is the first one, written in plain understandable Python 3.2:</p>
+
+<pre><code class="py">import string
+
+letters = string.ascii_lowercase + ' '
+indices = [
+     9, 20, 18, 19, 26,  0, 13, 14, 19, 7,  4, 17, 26,
+    15, 24, 19,  7, 14, 13, 26,  7,  0, 2, 10,  4, 17
+]
+
+print(''.join(letters[i] for i in indices))
+</code></pre>
+
+<p>This is fairly simple.  Instead of explicitly embedding the string 'just another python hacker' in the program, we assemble it using the index of its letters in the string 'abcdefghijklmnopqrstuvwxyz '.  Obfuscation is achieved through a series of minor measures:</p>
+
+<ul><li>Instead of calling the print function, we import sys and make a call to sys.stdout.write.</li><li>string.lowercase + ' ' is assembled by joining together the character versions of its respective ordinal values (97 to 123 and 32).</li><li>The integer indices are joined together using 'l' and split into a list.</li><li>Liberal use of ''' and the fact that multiple subsequent strings in Python are concatenated.</li></ul>
+
+<p>Here's the obfuscated version:</p>
+
+<pre><code class="py">eval("__import__('''\x73''''''\x79''''''\x73''').sTdOuT".lower()
+).write(''.join(map(lambda _:(list(map(chr,range(97,123)))+[chr(
+32)])[int(_)],('''9l20l18l19''''''l26l0l13l14l19l7l4l17l26l15'''
+'''l24l19l7l14l1''''''3l26l7l0l2l10l4l17''').split('l')))+'\n',)
+</code></pre>
+
+<p>More could certainly be done, but that's about as far as this one captivated my interest.  Stay tuned for the next JAPH.</p>
+
+{% endblock %}
