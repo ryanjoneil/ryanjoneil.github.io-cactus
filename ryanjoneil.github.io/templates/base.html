@@ -20,7 +20,7 @@
     </head>
 
     <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar navbar navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -67,6 +67,10 @@
     <script src="{% static '/static/js/vendor/jquery-1.10.1.js' %}"></script>
     <script src="{% static '/static/js/vendor/bootstrap.js' %}"></script>
     <script src="{% static '/static/js/main.js' %}"></script>
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.8.0/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
   </body>
 
   {% block scripts %}

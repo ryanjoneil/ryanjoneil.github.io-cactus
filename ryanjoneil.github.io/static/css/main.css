@@ -1,22 +1,33 @@
+.content-outer {
+	border: 1px dotted;
+    border-radius: 5px;
+    margin: 0px;
+}
 
+.content-header {
+    background-color: #9AC0CD;
+    padding: 5px 20px 5px 20px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    font-weight: bold;
+}
 
-/* ==========================================================================
-   Author's custom styles
-   ========================================================================== */
+.content-inner {
+    padding: 0px 20px 0px 20px;
+}
 
+.jumbotron {
+    background-color: #fafafa;
+    font-size: 18px;
+    margin-bottom: 0px;
+    padding-bottom: 20px;
+    padding-top: 20px;
+}
 
+.jumbotron h1 {
+	font-size: 40px;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+.navbar {
+	background-color: #cccccc;
+}

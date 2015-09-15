@@ -1,11 +1,26 @@
-title: reformed japhs in python
+title: reformed japhs in python - ridiculous anagram
 author: Ryan J. O'Neil
 date: 03-04-2011
 
 {% extends "post.html" %}
-{% block body %}
 
-<p>Here's the second in my reformed JAPH series.  It takes an anagram of 'just another python hacker' and converts it prior to printing.  It sorts the anagram by the indices of another string, in order of their associated characters.  This is sort of like a pre-digested <a href="http://en.wikipedia.org/wiki/Schwartzian_transform">Schwartzian transform</a>.</p><pre class="brush: python; toolbar: false;">x = 'upjohn tehran hectors katy'<br />y = '1D0HG6JFO9P5ICKAM87B24NL3E'<br /><br />print(''.join(x[i] for i in sorted(range(len(x)), key=lambda p: y[p])))</pre><p>Obfuscation consists mostly of using silly machinations to construct the string we use to sort the anagram.</p><pre class="brush: python; toolbar: false;">print(''.join('''upjohn tehran hectors katy'''[_]for _ in sorted(range<br />(26),key=lambda p:(hex(29)[2:].upper()+str(3*3*3*3-3**4)+'HG'+str(sum(<br />range(4)))+'JFO'+str((1+2)**(1+1))+'P'+str(35/7)[:1]+'i.c.k.'.replace(<br />'.','').upper()+'AM'+str(3**2*sum(range(5))-3)+hex(0o5444)[2:].replace<br />(*'\x62|\x42'.split('|'))+'NL'+hex(0o076).split('x')[1].upper())[p])))</pre>
+{% block post %}
 
+<p>Here's the second in my reformed JAPH series.  It takes an anagram of 'just another python hacker' and converts it prior to printing.  It sorts the anagram by the indices of another string, in order of their associated characters.  This is sort of like a pre-digested <a href="http://en.wikipedia.org/wiki/Schwartzian_transform">Schwartzian transform</a>.</p>
+
+<pre><code class="py">x = 'upjohn tehran hectors katy'
+y = '1D0HG6JFO9P5ICKAM87B24NL3E'
+
+print(''.join(x[i] for i in sorted(range(len(x)), key=lambda p: y[p])))
+</code></pre>
+
+<p>Obfuscation consists mostly of using silly machinations to construct the string we use to sort the anagram.</p>
+
+<pre><code class="py">print(''.join('''upjohn tehran hectors katy'''[_]for _ in sorted(range
+(26),key=lambda p:(hex(29)[2:].upper()+str(3*3*3*3-3**4)+'HG'+str(sum(
+range(4)))+'JFO'+str((1+2)**(1+1))+'P'+str(35/7)[:1]+'i.c.k.'.replace(
+'.','').upper()+'AM'+str(3**2*sum(range(5))-3)+hex(0o5444)[2:].replace
+(*'\x62|\x42'.split('|'))+'NL'+hex(0o076).split('x')[1].upper())[p])))
+</code></pre>
 
 {% endblock %}
