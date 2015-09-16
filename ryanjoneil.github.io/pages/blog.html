@@ -24,7 +24,7 @@
           <li>
               <p>
                 <a href='{{ post.path }}'>{{ post.title }}</a>
-                {% if post.lang %}({% ifequal post.lang 'R' %}<a href="blog-r.html">R</a>{% else %}{% ifequal post.lang 'Python' %}<a href="blog-r.html">Python</a>{% else %}{{ post.lang }}{% endifequal %}{% endifequal %}){% endif %}
+                {% if post.lang %}({% ifequal post.lang 'R' %}<a href="blog-r.html">R</a>{% else %}{% ifequal post.lang 'Python' %}<a href="blog-python.html">Python</a>{% else %}{{ post.lang }}{% endifequal %}{% endifequal %}){% endif %}
                 {% if post.description %}<br/>{{ post.description }}{% endif %}
               </p>
           </li>
