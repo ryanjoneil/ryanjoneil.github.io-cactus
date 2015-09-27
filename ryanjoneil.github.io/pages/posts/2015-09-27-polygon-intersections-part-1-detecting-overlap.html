@@ -1,0 +1,185 @@
+title: Polygon Intersections Part 1 - Detecting Overlap
+author: Ryan J. O'Neil
+date: 27-09-2015
+category: Optimization
+lang: Python
+description: Detecting when two polygons touch or overlap.
+
+{% extends "post.html" %}
+
+{% block post %}
+
+<p>A fun geometry problem to think about is: given two polygons, do they interesect? That is, do they touch on the border or overlap? Does one reside entirely within the other? While this question has obvious applications in computer graphics <em>(see: arcade games of the 1980s)</em>, it's also important in areas such as <a href="http://paginas.fe.up.pt/~esicup/tiki-index.php">cutting &amp; packing problems.</a></p>
+
+<p>There are a number of way to do this. In computer graphics, the problem is often approached using a <a href="https://en.wikipedia.org/wiki/Clipping_(computer_graphics)">clipping algorithm</a>. This post examines a couple of simpler techniques using linear inequalities and properties of convexity. To simplify the presentation, we assume we're only interested in convex polygons in two dimensions. We also assume that rotation is not an issue. That is, if one of the polygons is rotated, we can simply re-test to see if they overlap.</p>
+
+<p><center>
+<br/><img src="/static/images/2015/polygons/asteroids.jpg" /><br/><br/>
+<em>Don't get clobbered by an asteroid!</em>
+</center></p>
+
+<h4>The Problem</h4>
+
+<p>Let's say we have two objects which can be placed anywhere inside a rectangle, a right triangle and a square. The triangle has vertices $\{\left(x_t, y_t\right), \left(x_t, y_t + a\right), \left(x_t + a, y_t\right)\}$. The square has vertices $\{\left(x_s, y_s\right), \left(x_s, y_s + a\right), \left(x_s + a, y_s + a\right)\, \left(x_s + a, y_s\right)\}$. We will be given $\left(x_t, y_t\right)$, $\left(x_s, y_s\right)$, and $a$, but we do not know them a prior. We would like to know, for any set of values these can take, where the triangle and square they define intersect.</p>
+
+<p>$\left(x_t, y_t\right)$ and $\left(x_s, y_s\right)$ are the offsets of the triangle and square with respect to the bottom left corner of the rectangle. If they are far enough apart in any direction, the two objects do not intersect. The figure below shows such a case, with small gray circles representing $\left(x_t, y_t\right)$ and $\left(x_s, y_s\right)$.</p>
+
+<p>
+<center><br/>
+<svg height="150" width="400">
+  <rect x="0" y="0" width="400" height="150"
+  style="fill:white;stroke:grey;stroke-width:4;stroke-opacity:0.9"></rect>
+
+  <polygon points="25,125 25,25 125,125" style="fill:blue;stroke-width:0;fill-opacity:0.7"></polygon>
+  <circle cx="25" cy="125" r="3" stroke="black" stroke-width="1" fill="black" fill-opacity="0.5"s></circle>
+
+  <rect x="275" y="25" width="100" height="100"
+  style="fill:red;stroke-width:0;fill-opacity:0.7"></rect>
+  <circle cx="275" cy="125" r="3" stroke="black" stroke-width="1" fill="black" fill-opacity="0.5"></circle>
+</svg><br/>
+<em>Polygons that do not intersect</em><br/>
+</center><br/>
+</p>
+
+<p>However, if they are too close in some manner, the objects will either touch or overlap, as shown below.</p>
+
+<p>
+<center><br/>
+<svg height="150" width="400">
+  <rect x="0" y="0" width="400" height="150"
+  style="fill:white;stroke:grey;stroke-width:4;stroke-opacity:0.9"></rect>
+
+  <polygon points="125,125 125,25 225,125" style="fill:blue;stroke-width:0;fill-opacity:0.7"></polygon>
+  <circle cx="125" cy="125" r="3" stroke="black" stroke-width="1" fill="black" fill-opacity="0.5"s></circle>
+
+  <rect x="175" y="25" width="100" height="100"
+  style="fill:red;stroke-width:0;fill-opacity:0.7"></rect>
+  <circle cx="175" cy="125" r="3" stroke="black" stroke-width="1" fill="black" fill-opacity="0.5"></circle>
+</svg><br/>
+<em>Polygons that intersect</em><br/>
+</center><br/>
+</p>
+
+<p>The two polygons can intersect in a few different ways. They may touch on their borders, in which case they will share a single point or line segment. They may overlap such that their intersecting region has nonzero relative interior but each polygon contains points outside the other. Or one of them might live entirely within the other, so that the former is a subset of the latter. Our goal is to determine if any of these cases are true given any $\left(x_t, y_t\right)$, $\left(x_s, y_s\right)$,  and $a$.</p>
+
+<br/>
+
+<h5>Method 1: Define the intersecting polygon</h5>
+
+<h6>Triangular region ($S_t$)</h6>
+
+$$
+\begin{array}{rcl}
+    S_t = \{\,\left(x, y\right) & | & x_t \le x \le x_t + a,\\ 
+                                &   & y_t \le y \le y_t + a,\\ 
+                                &   & x + y \le x_t + y_t + a \,\}
+\end{array}
+$$
+
+<h6>Square region ($S_s$)</h6>
+
+$$
+\begin{array}{rcl}
+    S_s = \{\,\left(x, y\right) & | & x_s \le x \le x_s + a,\\ 
+                                &   & y_s \le y \le y_s + a \,\}
+\end{array}
+$$
+
+<h6>Intersecting region ($S_i  = S_t \cap S_s$)</h6>
+
+$$
+\begin{array}{rcl}
+    S_i = \{\,\left(x, y\right) & | & x_t \le x \le x_t + a,\\ 
+                                &   & y_t \le y \le y_t + a,\\ 
+                                &   & x + y \le x_t + y_t + a,\\
+                                &   & x_s \le x \le x_s + a,\\ 
+                                &   & y_s \le y \le y_s + a \,\}
+\end{array}
+$$
+
+<br/>
+
+<h5>Method 2: Convex combinations of vertices</h5>
+
+$$
+\lambda_1 \left(\begin{array}{c} x_t \\ y_t \end{array}\right) +
+    \lambda_2 \left(\begin{array}{c} x_t + a \\ y_t \end{array}\right) +
+    \lambda_3 \left(\begin{array}{c} x_t \\ y_t + a \end{array}\right) =
+\lambda_4 \left(\begin{array}{c} x_s \\ y_s \end{array}\right) +
+    \lambda_5 \left(\begin{array}{c} x_s + a \\ y_s \end{array}\right) +
+    \lambda_6 \left(\begin{array}{c} x_s \\ y_s + a \end{array}\right) +
+    \lambda_7 \left(\begin{array}{c} x_s + a \\ y_s + a \end{array}\right)\\ 
+\lambda_1 + \lambda_2 + \lambda_3 = 1\\  
+\lambda_4 + \lambda_5 + \lambda_6 + \lambda_7 = 1\\  
+\lambda_i \ge 0, \, i = \{1, \ldots, 7\}
+$$
+
+<pre><code class="py">import pulp
+import random
+
+def construct_method1(xy_t, xy_s, a):
+    x_t, y_t = xy_t
+    x_s, y_s = xy_s
+
+    m = pulp.LpProblem('method 1', pulp.LpMaximize)
+    x = pulp.LpVariable('x', max(x_t, x_s), min(x_t, x_s) + a)
+    y = pulp.LpVariable('y', max(y_t, y_s), min(y_t, y_s) + a)
+    m += x + y <= x_t + y_t + a
+
+    return m
+
+def construct_method2(xy_t, xy_s, a):
+    x_t, y_t = xy_t
+    x_s, y_s = xy_s
+
+    m = pulp.LpProblem('method 2', pulp.LpMaximize)
+    l = [pulp.LpVariable('l%d' % i, 0, 1) for i in range(1,8)]
+    m += pulp.lpDot(l[:3], [x_t, x_t + a, x_t]) == \
+         pulp.lpDot(l[3:], [x_s, x_s + a, x_s, x_s + a])
+    m += pulp.lpDot(l[:3], [y_t, y_t, y_t + a]) == \
+         pulp.lpDot(l[3:], [y_s, y_s, y_s + a, y_s + a])
+    m += pulp.lpSum(l[:3]) == 1
+    m += pulp.lpSum(l[3:]) == 1
+
+    return m
+
+if __name__  == '__main__':
+    problems1 = []
+    problems2 = []
+
+    for _ in range(1000):
+        a = random.random()*2.5 + 1
+        x_t = random.random()*10
+        y_t = random.random()*10
+        x_s = random.random()*10
+        y_s = random.random()*10
+
+        problems1.append(construct_method1([x_t, y_t], [x_s, y_s], a))
+        problems2.append(construct_method2([x_t, y_t], [x_s, y_s], a))
+
+    overlap1 = []
+    for p in problems1:
+        p.solve(solver=pulp.GLPK(msg=False))
+        overlap1.append(p.status == pulp.LpStatusOptimal)
+
+    overlap2 = []
+    for p in problems2:
+        p.solve(solver=pulp.GLPK(msg=False))
+        overlap2.append(p.status == pulp.LpStatusOptimal)
+
+    assert overlap1 == overlap2</code></pre>
+
+<h4>Exercises</h4>
+
+<ul>
+    <li>We assumed convex polygons in this presentation. How might one extend the model to work on nonconvex polygons? What problems does this introduce?</li>
+    <li>The two methods shown above are equivalent. How can this be proven?</li>
+</ul>
+
+<h4>References</h4>
+
+<ul>
+    <li></li>
+</ul>
+
+{% endblock %}

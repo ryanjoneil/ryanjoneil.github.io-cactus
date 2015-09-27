@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="jumbotron">
+  <div class="container">
+    <h1>adventures in optimization</h1>
+    <p>The charming adventures of <a href="mailto:ryanjoneil@gmail.com">a data scientist</a> and his solver.</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content-outer">
+    <div class="content-inner">
+      <h2>Blog Posts by Date / <a href="blog.html">Category</a></h2>
+
+      <ul>
+      {% for post in posts %}
+        <li>
+            <p>
+              <a href='{{ post.path }}'>{{ post.title }}</a> &ndash; {{ post.date|date:"N j, Y" }}
+              {% if post.lang %}({% ifequal post.lang 'R' %}<a href="blog-r.html">R</a>{% else %}{% ifequal post.lang 'Python' %}<a href="blog-python.html">Python</a>{% else %}{{ post.lang }}{% endifequal %}{% endifequal %}){% endif %}
+              {% if post.description %}<br/>{{ post.description }}{% endif %}
+            </p>
+        </li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
