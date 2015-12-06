@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-    <title>adventure in optimization</title>
+    <title>adventures in optimization</title>
     <link href="http://ryanjoneil.github.io/rss.xml" rel="self"/>
     <link href="http://ryanjoneil.github.io"/>
     <id>http://ryanjoneil.github.io</id>

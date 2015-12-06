@@ -20,6 +20,7 @@
 .jumbotron {
     background-color: #ffffff;
     font-size: 18px;
+    line-height: inherit;
     margin-bottom: 0px;
     padding-bottom: 20px;
     padding-top: 20px;
