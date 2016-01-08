@@ -1,0 +1,64 @@
+title: Polygon Intersections Part 2 - Removing Overlap
+author: Ryan J. O'Neil
+date: 10-12-2015
+category: Optimization
+lang: Python
+description: Removing overlap of polygons in decision models.
+
+{% extends "post.html" %}
+
+{% block post %}
+
+<p>In our last post...</p>
+
+<p>It would be convenient if we had a device that allowed us to remove overlap between objects in arbitrary models.</p>
+
+<p>One such device is the <em><a href="todo">No-Fit Polygon</a> (NFP)</em>.</p>
+
+<h4>The No-Fit Polygon</h4>
+
+<p><center>
+<br/><img src="/static/images/2015/polygons/nfp-generation.png" /><br/><br/>
+<em>Geometry of the No-Fit Polygon</em>
+</center></p>
+
+<h4>The Poor Man's NFP for Convex Polygons</h4>
+
+<p>The <a href="todo"><em>Minkowski Sum</em></a> of two sets is...</p>
+
+$$
+  NFP_{AB} = \dots
+$$
+
+<p>There exist a number of algorithms for generating NFPs for irregular polygons.</p>
+
+<p>If we assume our polygons are convex...</p>
+
+<h4>NFP-Based Overlap Elimination</h4>
+
+<p><center>
+<br/><img src="/static/images/2015/polygons/nfp-slices.png" /><br/><br/>
+<em>Horizontal slices exterior to a NFPt</em>
+</center></p>
+
+$$
+
+$$
+
+<h4>An Example Formulation</h4>
+
+$$
+$$
+
+<pre><code class="py">
+</code></pre>
+
+<h4>Exercises</h4>
+
+<ul>
+    <li></li>
+</ul>
+
+<h4>References</h4>
+
+{% endblock %}
