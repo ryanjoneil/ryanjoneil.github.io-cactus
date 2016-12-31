@@ -10,27 +10,19 @@
 
 <div class="container">
   <div class="content-outer">
-    <!--div class="content-header">
-      Blog Posts:
-    </div-->
-
     <div class="content-inner">
-      <h2>Blog Posts by Category / <a href="blog-date.html">Date</a></h2>
-
-      {% for cat, cat_posts in cats.items %}
-      <h3><a href="blog-{{ cat|slugify }}.html">{{ cat }}</a></h3>
+      <h2>Blog Posts by Date</a></h2>
       <ul>
-        {% for post in cat_posts %}
-          <li>
-              <p>
-                <a href='{{ post.path }}'>{{ post.title }}</a>
-                {% if post.lang %}({% ifequal post.lang 'R' %}<a href="blog-r.html">R</a>{% else %}{% ifequal post.lang 'Python' %}<a href="blog-python.html">Python</a>{% else %}{{ post.lang }}{% endifequal %}{% endifequal %}){% endif %}
-                {% if post.description %}<br/>{{ post.description }}{% endif %}
-              </p>
-          </li>
+        {% for post in posts %}
+        <li>
+            <p>
+              <a href='{{ post.path }}'>{{ post.title }}</a>
+              {% if post.description %} {{ post.description }}{% endif %}
+              {% if post.lang %}<em>({{ post.lang }})</em>{% endif %}
+            </p>
+        </li>
         {% endfor %}
       </ul>
-      {% endfor %}
     </div>
   </div>
 </div>

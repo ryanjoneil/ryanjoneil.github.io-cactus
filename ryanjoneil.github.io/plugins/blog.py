@@ -6,7 +6,7 @@ import logging
 ORDER = 999
 POSTS_PATH = 'posts/'
 POSTS = []
-CATS = OrderedDict({'Data Science': [], 'Optimization': [], 'Programming': []})
+CATS = OrderedDict({'Modeling': [], 'Programming': []})
 LANGS = OrderedDict({'Python': [], 'R': []})
 
 from django.template import Context
