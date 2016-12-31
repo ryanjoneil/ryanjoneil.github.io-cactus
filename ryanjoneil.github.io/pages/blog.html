@@ -11,13 +11,12 @@
 <div class="container">
   <div class="content-outer">
     <div class="content-inner">
-      <h2>Blog Posts by Date</a></h2>
+      <h2>posts by date</a></h2>
       <ul>
         {% for post in posts %}
         <li>
             <p>
-              <a href='{{ post.path }}'>{{ post.title }}</a>
-              {% if post.description %} {{ post.description }}{% endif %}
+              <a href='{{ post.path }}'>{{ post.title }}</a>{% if post.description %}: {{ post.description }}{% endif %}
               {% if post.lang %}<em>({{ post.lang }})</em>{% endif %}
             </p>
         </li>
